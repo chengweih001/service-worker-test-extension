@@ -7,6 +7,7 @@ const GET_DEVICES_CMD = 'get_devices';
 const OPEN_DEVICE_CMD = 'open_device';
 const CLOSE_DEVICE_CMD = 'close_device';
 const FEED_SERVICE_WORKER_CMD = 'feed_service_worker';
+const BOUNCE_DEVICE_CMD = 'bounce_device';
 
 
 // Formats an 8-bit integer `value` in hexadecimal with leading zero.
@@ -83,6 +84,16 @@ const createButtons = (deviceType) => {
             });
           };
           devicesBlockElement.appendChild(closeButtonElement);
+          devicesBlockElement.appendChild(document.createElement('br'));
+
+          debouncingButtonElement = document.createElement('button');
+          debouncingButtonElement.appendChild(document.createTextNode(`Bounce ${deviceType}Devices[${i}] ${devices[i].name}`));
+          debouncingButtonElement.onclick = e => {
+            chrome.runtime.sendMessage({type: deviceType, cmd: BOUNCE_DEVICE_CMD, data: i}, (rsp) => {
+              console.log(rsp);
+            });
+          };
+          devicesBlockElement.appendChild(debouncingButtonElement);
           devicesBlockElement.appendChild(document.createElement('br'));
         }
       }

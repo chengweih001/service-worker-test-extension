@@ -4,6 +4,7 @@ const USB_DEVICE_TYPE = 'USB';
 const GET_DEVICES_CMD = 'get_devices';
 const OPEN_DEVICE_CMD = 'open_device';
 const CLOSE_DEVICE_CMD = 'close_device';
+const BOUNCE_DEVICE_CMD = 'bounce_device';
 
 // This is used to store device array from getDevices() to avoid local
 // variable getting garbage collected.
@@ -56,6 +57,18 @@ const addHidDevice = device => {
   }
 };
 
+const bounceDevice = (device, numBounce, finalCb) => {
+  if (numBounce <= 0) {
+    finalCb();
+    return;
+  }
+  device.open().then(() => {
+    device.close().then(() => {
+      bounceDevice(device, numBounce - 1, finalCb);
+    })
+  });
+}
+
 const setUpMessageHandler = () => {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('receive msg:', message);
@@ -95,6 +108,17 @@ const setUpMessageHandler = () => {
         sendResponse('Not enough num of devices:', devices.length);
       } else {
         globalDevices[type][idx].close().then(() => {
+          sendResponse(`devices[${idx}] ${canonicalDeviceName(globalDevices[type][idx], type)} closed `, idx);
+        });
+      }
+    } else if (cmd == BOUNCE_DEVICE_CMD) {
+      let idx = data;
+      if (globalDevices[type] === null) {
+        sendResponse(`globalDevices[${type}] is null, please click \"Get Granted ${type} Devices\" button first`);
+      } else if (idx >= globalDevices[type].length) {
+        sendResponse('Not enough num of devices:', devices.length);
+      } else {
+        bounceDevice(globalDevices[type][idx], 5, () => {
           sendResponse(`devices[${idx}] ${canonicalDeviceName(globalDevices[type][idx], type)} closed `, idx);
         });
       }
