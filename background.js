@@ -58,6 +58,7 @@ const addHidDevice = device => {
 };
 
 const bounceDevice = (device, numBounce, finalCb) => {
+  console.log('[DEBUG] SW numBounce:', numBounce);
   if (numBounce <= 0) {
     finalCb();
     return;
@@ -112,13 +113,14 @@ const setUpMessageHandler = () => {
         });
       }
     } else if (cmd == BOUNCE_DEVICE_CMD) {
-      let idx = data;
+      let idx = data['idx'];
+      let times = data['times'];
       if (globalDevices[type] === null) {
         sendResponse(`globalDevices[${type}] is null, please click \"Get Granted ${type} Devices\" button first`);
       } else if (idx >= globalDevices[type].length) {
         sendResponse('Not enough num of devices:', devices.length);
       } else {
-        bounceDevice(globalDevices[type][idx], 5, () => {
+        bounceDevice(globalDevices[type][idx], times, () => {
           sendResponse(`devices[${idx}] ${canonicalDeviceName(globalDevices[type][idx], type)} closed `, idx);
         });
       }

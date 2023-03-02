@@ -89,11 +89,17 @@ const createButtons = (deviceType) => {
           debouncingButtonElement = document.createElement('button');
           debouncingButtonElement.appendChild(document.createTextNode(`Bounce ${deviceType}Devices[${i}] ${devices[i].name}`));
           debouncingButtonElement.onclick = e => {
-            chrome.runtime.sendMessage({type: deviceType, cmd: BOUNCE_DEVICE_CMD, data: i}, (rsp) => {
+            chrome.runtime.sendMessage({type: deviceType, cmd: BOUNCE_DEVICE_CMD,
+               data: {idx: i, times:  document.querySelector('#debouncingTimes').value}}, (rsp) => {
               console.log(rsp);
             });
           };
+          debouncingTimesInputElement = document.createElement('input');
+          debouncingTimesInputElement.setAttribute('type', 'number');
+          debouncingTimesInputElement.setAttribute('id', 'debouncingTimes');
+          debouncingTimesInputElement.setAttribute('value', 5);
           devicesBlockElement.appendChild(debouncingButtonElement);
+          devicesBlockElement.appendChild(debouncingTimesInputElement);
           devicesBlockElement.appendChild(document.createElement('br'));
         }
       }
