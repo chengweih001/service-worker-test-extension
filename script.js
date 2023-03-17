@@ -86,20 +86,49 @@ const createButtons = (deviceType) => {
           devicesBlockElement.appendChild(closeButtonElement);
           devicesBlockElement.appendChild(document.createElement('br'));
 
-          debouncingButtonElement = document.createElement('button');
-          debouncingButtonElement.appendChild(document.createTextNode(`Bounce ${deviceType}Devices[${i}] ${devices[i].name}`));
-          debouncingButtonElement.onclick = e => {
+          bouncingButtonElement = document.createElement('button');
+          bouncingButtonElement.appendChild(document.createTextNode(`Bounce ${deviceType}Devices[${i}] ${devices[i].name}`));
+          bouncingButtonElement.onclick = e => {
             chrome.runtime.sendMessage({type: deviceType, cmd: BOUNCE_DEVICE_CMD,
-               data: {idx: i, times:  document.querySelector('#debouncingTimes').value}}, (rsp) => {
+               data: {idx: i, 
+                times:  document.querySelector('#bouncingTimes').value,
+                bounceInterval: document.querySelector('#bouncingInterval').value,
+                openInterval: document.querySelector('#openingInterval').value,
+              }}, (rsp) => {
               console.log(rsp);
             });
           };
-          debouncingTimesInputElement = document.createElement('input');
-          debouncingTimesInputElement.setAttribute('type', 'number');
-          debouncingTimesInputElement.setAttribute('id', 'debouncingTimes');
-          debouncingTimesInputElement.setAttribute('value', 5);
-          devicesBlockElement.appendChild(debouncingButtonElement);
-          devicesBlockElement.appendChild(debouncingTimesInputElement);
+          bouncingTimesInputElement = document.createElement('input');
+          bouncingTimesInputElement.setAttribute('type', 'number');
+          bouncingTimesInputElement.setAttribute('id', 'bouncingTimes');
+          bouncingTimesInputElement.setAttribute('value', 5);
+          bouncingTimesInputLabelElement = document.createElement('label');
+          bouncingTimesInputLabelElement.setAttribute('for', 'bouncingTimes');
+          bouncingTimesInputLabelElement.innerHTML = 'num bounce:';
+
+          bouncingIntervalInputElement = document.createElement('input');
+          bouncingIntervalInputElement.setAttribute('type', 'number');
+          bouncingIntervalInputElement.setAttribute('id', 'bouncingInterval');
+          bouncingIntervalInputElement.setAttribute('value', 300);
+          bouncingIntervalInputLabelElement = document.createElement('label');
+          bouncingIntervalInputLabelElement.setAttribute('for', 'bouncingInterval');
+          bouncingIntervalInputLabelElement.innerHTML = 'Bounce interval(ms):';
+
+          openingIntervalInputElement = document.createElement('input');
+          openingIntervalInputElement.setAttribute('type', 'number');
+          openingIntervalInputElement.setAttribute('id', 'openingInterval');
+          openingIntervalInputElement.setAttribute('value', 100);
+          openingIntervalInputLabelElement = document.createElement('label');
+          openingIntervalInputLabelElement.setAttribute('for', 'openingInterval');
+          openingIntervalInputLabelElement.innerHTML = 'Open interval(ms):';          
+
+          devicesBlockElement.appendChild(bouncingButtonElement);
+          devicesBlockElement.appendChild(bouncingTimesInputLabelElement);
+          devicesBlockElement.appendChild(bouncingTimesInputElement);
+          devicesBlockElement.appendChild(bouncingIntervalInputLabelElement);
+          devicesBlockElement.appendChild(bouncingIntervalInputElement);     
+          devicesBlockElement.appendChild(openingIntervalInputLabelElement);
+          devicesBlockElement.appendChild(openingIntervalInputElement);                    
           devicesBlockElement.appendChild(document.createElement('br'));
         }
       }

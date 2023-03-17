@@ -57,16 +57,21 @@ const addHidDevice = device => {
   }
 };
 
-const bounceDevice = (device, numBounce, finalCb) => {
-  console.log('[DEBUG] SW numBounce:', numBounce);
+const bounceDevice = (device, numBounce, bounceInterval, openInterval, finalCb) => {
+  console.log(`[DEBUG] SW numBounce:${numBounce}, bouceInterval:${bounceInterval}, openInterval:${openInterval}`);
   if (numBounce <= 0) {
     finalCb();
     return;
   }
+
   device.open().then(() => {
-    device.close().then(() => {
-      bounceDevice(device, numBounce - 1, finalCb);
-    })
+    setTimeout(() => {
+      device.close().then(() => {
+        setTimeout(() => {
+          bounceDevice(device, numBounce - 1, bounceInterval, openInterval, finalCb);
+        }, bounceInterval);
+      })
+    }, openInterval);      
   });
 }
 
@@ -115,12 +120,14 @@ const setUpMessageHandler = () => {
     } else if (cmd == BOUNCE_DEVICE_CMD) {
       let idx = data['idx'];
       let times = data['times'];
+      let bounceInterval = data['bounceInterval'];
+      let openInterval = data['openInterval'];
       if (globalDevices[type] === null) {
         sendResponse(`globalDevices[${type}] is null, please click \"Get Granted ${type} Devices\" button first`);
       } else if (idx >= globalDevices[type].length) {
         sendResponse('Not enough num of devices:', devices.length);
       } else {
-        bounceDevice(globalDevices[type][idx], times, () => {
+        bounceDevice(globalDevices[type][idx], times, bounceInterval, openInterval, () => {
           sendResponse(`devices[${idx}] ${canonicalDeviceName(globalDevices[type][idx], type)} closed `, idx);
         });
       }
