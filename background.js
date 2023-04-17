@@ -13,6 +13,15 @@ var globalDevices = {
   USB_DEVICE_TYPE: null,
 };
 
+// Use Chrome.alarms to keep the service worker alive.
+(async function createAlarm() {
+  console.log('Start Alarm');
+  chrome.alarms.create("KeepAliveAlarm", {
+    delayInMinutes: 0,
+    periodInMinutes: 15/60,
+  });
+})();
+
 console.log('Extension service worker background script (background.js)');
 
 // Formats an 8-bit integer `value` in hexadecimal with leading zero.
@@ -71,7 +80,7 @@ const bounceDevice = (device, numBounce, bounceInterval, openInterval, finalCb) 
           bounceDevice(device, numBounce - 1, bounceInterval, openInterval, finalCb);
         }, bounceInterval);
       })
-    }, openInterval);      
+    }, openInterval);
   });
 }
 
