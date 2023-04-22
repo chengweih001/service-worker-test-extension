@@ -13,14 +13,14 @@ var globalDevices = {
   USB_DEVICE_TYPE: null,
 };
 
-// Use Chrome.alarms to keep the service worker alive.
-(async function createAlarm() {
-  console.log('Start Alarm');
-  chrome.alarms.create("KeepAliveAlarm", {
-    delayInMinutes: 0,
-    periodInMinutes: 15/60,
-  });
-})();
+// // Use Chrome.alarms to keep the service worker alive.
+// (async function createAlarm() {
+//   console.log('Start Alarm');
+//   chrome.alarms.create("KeepAliveAlarm", {
+//     delayInMinutes: 0,
+//     periodInMinutes: 15/60,
+//   });
+// })();
 
 console.log('Extension service worker background script (background.js)');
 
@@ -182,27 +182,49 @@ if (navigator.hid) {
 }
 
 // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
-const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
-findTab();
-chrome.runtime.onConnect.addListener(port => {
-  if (port.name === 'keepAlive') {
-    setTimeout(() => port.disconnect(), 250e3);
-    port.onDisconnect.addListener(() => findTab());
-  }
-});
-async function findTab(tabs) {
-  if (chrome.runtime.lastError) { /* tab was closed before setTimeout ran */ }
-  for (const { id: tabId } of tabs || await chrome.tabs.query({ url: '*://*/*' })) {
-    try {
-      await chrome.scripting.executeScript({ target: { tabId }, func: connect });
-      chrome.tabs.onUpdated.removeListener(onUpdate);
-      return;
-    } catch (e) { }
-  }
-  chrome.tabs.onUpdated.addListener(onUpdate);
-}
-function connect() {
-  chrome.runtime.connect({ name: 'keepAlive' })
-    .onDisconnect.addListener(connect);
-}
+// const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
+// findTab();
+// chrome.runtime.onConnect.addListener(port => {
+//   if (port.name === 'keepAlive') {
+//     setTimeout(() => port.disconnect(), 250e3);
+//     port.onDisconnect.addListener(() => findTab());
+//   }
+// });
+// async function findTab(tabs) {
+//   if (chrome.runtime.lastError) { /* tab was closed before setTimeout ran */ }
+//   for (const { id: tabId } of tabs || await chrome.tabs.query({ url: '*://*/*' })) {
+//     try {
+//       await chrome.scripting.executeScript({ target: { tabId }, func: connect });
+//       chrome.tabs.onUpdated.removeListener(onUpdate);
+//       return;
+//     } catch (e) { }
+//   }
+//   chrome.tabs.onUpdated.addListener(onUpdate);
+// }
+// function connect() {
+//   chrome.runtime.connect({ name: 'keepAlive' })
+//     .onDisconnect.addListener(connect);
+// }
 
+
+
+// create the offscreen document if it doesn't already exist
+async function createOffscreen() {
+  console.log('[DEBUG] start of createOffscreen');
+  if (await chrome.offscreen.hasDocument?.()) return;
+  console.log('[DEBUG] to create offscreen document');
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['BLOBS'],
+    justification: 'keep service worker running',
+  });
+}
+createOffscreen();
+// chrome.runtime.onStartup.addListener(() => {
+//   console.log('[DEBUG] onStartup');
+//   createOffscreen();
+// });
+// a message from an offscreen document every 20 second resets the inactivity timer
+chrome.runtime.onMessage.addListener(msg => {
+  if (msg.keepAlive) console.log('keepAlive');
+});

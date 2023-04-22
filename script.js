@@ -90,7 +90,7 @@ const createButtons = (deviceType) => {
           bouncingButtonElement.appendChild(document.createTextNode(`Bounce ${deviceType}Devices[${i}] ${devices[i].name}`));
           bouncingButtonElement.onclick = e => {
             chrome.runtime.sendMessage({type: deviceType, cmd: BOUNCE_DEVICE_CMD,
-               data: {idx: i, 
+               data: {idx: i,
                 times:  document.querySelector('#bouncingTimes').value,
                 bounceInterval: document.querySelector('#bouncingInterval').value,
                 openInterval: document.querySelector('#openingInterval').value,
@@ -120,15 +120,15 @@ const createButtons = (deviceType) => {
           openingIntervalInputElement.setAttribute('value', 100);
           openingIntervalInputLabelElement = document.createElement('label');
           openingIntervalInputLabelElement.setAttribute('for', 'openingInterval');
-          openingIntervalInputLabelElement.innerHTML = 'Open interval(ms):';          
+          openingIntervalInputLabelElement.innerHTML = 'Open interval(ms):';
 
           devicesBlockElement.appendChild(bouncingButtonElement);
           devicesBlockElement.appendChild(bouncingTimesInputLabelElement);
           devicesBlockElement.appendChild(bouncingTimesInputElement);
           devicesBlockElement.appendChild(bouncingIntervalInputLabelElement);
-          devicesBlockElement.appendChild(bouncingIntervalInputElement);     
+          devicesBlockElement.appendChild(bouncingIntervalInputElement);
           devicesBlockElement.appendChild(openingIntervalInputLabelElement);
-          devicesBlockElement.appendChild(openingIntervalInputElement);                    
+          devicesBlockElement.appendChild(openingIntervalInputElement);
           devicesBlockElement.appendChild(document.createElement('br'));
         }
       }
@@ -150,9 +150,9 @@ window.onload = e => {
   createButtons(USB_DEVICE_TYPE);
   createButtons(HID_DEVICE_TYPE);
   // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
-  (function connect() {
-    chrome.runtime.connect({name: 'keepAlive'})
-      .onDisconnect.addListener(connect);
-  })();
+  // (function connect() {
+  //   chrome.runtime.connect({name: 'keepAlive'})
+  //     .onDisconnect.addListener(connect);
+  // })();
 };
 
