@@ -10,7 +10,7 @@
     "default_icon": {
       "32": "images/icon32.png"
     },
-    "default_title": "Click me",
+    "default_title": "Test Extension",
     "default_popup": "popup.html"
   },
   "permissions": ["scripting", "alarms", "offscreen"],
