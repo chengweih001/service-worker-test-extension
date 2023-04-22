@@ -1,5 +1,6 @@
 const HID_DEVICE_TYPE = 'HID';
 const USB_DEVICE_TYPE = 'USB';
+const KEEP_ALIVE_TYPE = 'keep_alive';
 
 const GET_DEVICES_CMD = 'get_devices';
 const OPEN_DEVICE_CMD = 'open_device';
@@ -86,7 +87,11 @@ const bounceDevice = (device, numBounce, bounceInterval, openInterval, finalCb) 
 
 const setUpMessageHandler = () => {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('receive msg:', message);
+    // console.log('receive msg:', message);
+    if (message.type == KEEP_ALIVE_TYPE) {
+      sendResponse('Alive!');
+      return;
+    }
     if (message.type != HID_DEVICE_TYPE && message.type != USB_DEVICE_TYPE) {
       return true;
     }
@@ -208,23 +213,16 @@ if (navigator.hid) {
 
 
 
-// create the offscreen document if it doesn't already exist
-async function createOffscreen() {
-  console.log('[DEBUG] start of createOffscreen');
-  if (await chrome.offscreen.hasDocument?.()) return;
-  console.log('[DEBUG] to create offscreen document');
+// create the offscreen document that will send message every 20
+// seconds which resets the inactivity timer.
+(async function createOffscreen() {
+  if (await chrome.offscreen.hasDocument?.()) {
+    console.log('offscreen document exists!');
+    return;
+  }
   await chrome.offscreen.createDocument({
     url: 'offscreen.html',
     reasons: ['BLOBS'],
-    justification: 'keep service worker running',
+    justification: 'keep service worker alive',
   });
-}
-createOffscreen();
-// chrome.runtime.onStartup.addListener(() => {
-//   console.log('[DEBUG] onStartup');
-//   createOffscreen();
-// });
-// a message from an offscreen document every 20 second resets the inactivity timer
-chrome.runtime.onMessage.addListener(msg => {
-  if (msg.keepAlive) console.log('keepAlive');
-});
+})();
