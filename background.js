@@ -10,18 +10,22 @@ const BOUNCE_DEVICE_CMD = 'bounce_device';
 // This is used to store device array from getDevices() to avoid local
 // variable getting garbage collected.
 var globalDevices = {
-  HID_DEVICE_TYPE: null,
-  USB_DEVICE_TYPE: null,
+  [HID_DEVICE_TYPE]: null,
+  [USB_DEVICE_TYPE]: null,
 };
 
-// // Use Chrome.alarms to keep the service worker alive.
-// (async function createAlarm() {
-//   console.log('Start Alarm');
-//   chrome.alarms.create("KeepAliveAlarm", {
-//     delayInMinutes: 0,
-//     periodInMinutes: 15/60,
-//   });
-// })();
+var lastAlarm;
+
+// Use Chrome.alarms to keep the service worker alive.
+(async function createAlarm() {
+  console.log('Start Alarm');
+  chrome.alarms.onAlarm.addListener(alarm => {lastAlarm = alarm});
+
+  chrome.alarms.create("KeepAliveAlarm", {
+    delayInMinutes: 0,
+    periodInMinutes: 15/60,
+  });
+})();
 
 console.log('Extension service worker background script (background.js)');
 
@@ -110,6 +114,7 @@ const setUpMessageHandler = () => {
         sendResponse(rsp);
       });
     } else if (cmd == OPEN_DEVICE_CMD) {
+      console.log('[DEBUG]globalDevices:', globalDevices);
       let idx = data;
       if (globalDevices[type] === null) {
         sendResponse(`globalDevices[${type}] is null, please click \"Get Granted ${type} Devices\" button first`);
@@ -215,14 +220,14 @@ if (navigator.hid) {
 
 // create the offscreen document that will send message every 20
 // seconds which resets the inactivity timer.
-(async function createOffscreen() {
-  if (await chrome.offscreen.hasDocument?.()) {
-    console.log('offscreen document exists!');
-    return;
-  }
-  await chrome.offscreen.createDocument({
-    url: 'offscreen.html',
-    reasons: ['BLOBS'],
-    justification: 'keep service worker alive',
-  });
-})();
+// (async function createOffscreen() {
+//   if (await chrome.offscreen.hasDocument?.()) {
+//     console.log('offscreen document exists!');
+//     return;
+//   }
+//   await chrome.offscreen.createDocument({
+//     url: 'offscreen.html',
+//     reasons: ['BLOBS'],
+//     justification: 'keep service worker alive',
+//   });
+// })();
