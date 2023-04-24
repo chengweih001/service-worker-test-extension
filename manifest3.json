@@ -1,0 +1,22 @@
+{
+  "name": "Service worker test extension 3",
+  "description": "An extension that creates a service worker",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "32": "images3/icon32.png"
+    },
+    "default_title": "Test Extension 3",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["scripting", "alarms", "offscreen"],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "32": "images3/icon32.png",
+    "128": "images3/icon128.png"
+  }
+}
