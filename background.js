@@ -40,7 +40,8 @@ const hex16 = value => {
 };
 
 const canonicalDeviceName = (device, type) => {
-  return `[${type}] ${hex16(device.vendorId)}:${hex16(device.productId)} ${device.productName}`
+  let serialNumber = device.serialNumber || '';
+  return `[${type}] ${hex16(device.vendorId)}:${hex16(device.productId)} ${device.productName} ${serialNumber}`
 }
 
 const addUsbDevice = device => {
