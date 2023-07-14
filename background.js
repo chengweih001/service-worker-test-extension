@@ -17,15 +17,15 @@ var globalDevices = {
 var lastAlarm;
 
 // Use Chrome.alarms to keep the service worker alive.
-(async function createAlarm() {
-  console.log('Start Alarm');
-  chrome.alarms.onAlarm.addListener(alarm => {lastAlarm = alarm});
+// (async function createAlarm() {
+//   console.log('Start Alarm');
+//   chrome.alarms.onAlarm.addListener(alarm => {lastAlarm = alarm});
 
-  chrome.alarms.create("KeepAliveAlarm", {
-    delayInMinutes: 0,
-    periodInMinutes: 15/60,
-  });
-})();
+//   chrome.alarms.create("KeepAliveAlarm", {
+//     delayInMinutes: 0,
+//     periodInMinutes: 15/60,
+//   });
+// })();
 
 console.log('Extension service worker background script (background.js)');
 
@@ -172,10 +172,44 @@ if (navigator.usb) {
   console.log('WebUSB not available');
 }
 
+
+self.oninstall = (event) => {
+  let promises = [];
+  if (navigator.hid) {
+    // Setting onconnect to null is to make sure the next line trigger event
+    // added.
+    navigator.hid.onconnect = null;
+    // Register a dummy event listener in installing stage to persist
+    // has_hid_event_listener of the ServiceWorkerRegistraitonData in the
+    // database.
+    navigator.hid.onconnect = () => {}
+    // Wait until resolving getDevices promise to make sure previous
+    // registering event listener request is processed by the HidService.
+    promises.push(navigator.hid.getDevices());
+  }
+  event.waitUntil(Promise.all(promises));
+}
+
 if (navigator.hid) {
-  // Add connection event listeners.
-  navigator.hid.onconnect = console.log;
-  navigator.hid.ondisconnect = console.log;
+  var curr = new Date();
+  console.log('created on ', curr);
+  navigator.hid.onconnect = (e) => {
+    console.log('event onconnect listner created from ', curr);
+    console.log(e);
+  }
+  navigator.hid.ondisconnect = (e) => {
+    console.log('event ondisconnect listner created from ', curr);
+    console.log(e);
+  }
+
+  // self.onactivate = (event) => {
+  //   navigator.hid.ondisconnect = (e) => {
+  //     console.log('event ondisconnect listner created from onactivate');
+  //     console.log(e);
+  //   }
+  //   event.waitUntil(navigator.hid.getDevices());
+  //   console.log('[DEBUG] onactivate event!!!');
+  // }
 
   // Log granted device permissions to the console.
   navigator.hid.getDevices().then(devices => {
