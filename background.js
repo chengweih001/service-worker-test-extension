@@ -157,10 +157,17 @@ const setUpMessageHandler = () => {
   });
 }
 
+// Set up onMessage handler.
+setUpMessageHandler();
+
 if (navigator.usb) {
   // Add connection event listeners.
-  navigator.usb.onconnect = console.log;
-  navigator.usb.ondisconnect = console.log;
+  navigator.usb.onconnect = (e) => {
+    console.log('usb onconnect: ', e);
+  }
+  navigator.usb.ondisconnect = (e) => {
+    console.log('usb ondisconnect: ', e);
+  }
 
   // Log granted device permissions to the console.
   navigator.usb.getDevices().then(devices => {
@@ -173,44 +180,14 @@ if (navigator.usb) {
   console.log('WebUSB not available');
 }
 
-
-self.oninstall = (event) => {
-  let promises = [];
-  if (navigator.hid) {
-    // Setting onconnect to null is to make sure the next line trigger event
-    // added.
-    navigator.hid.onconnect = null;
-    // Register a dummy event listener in installing stage to persist
-    // has_hid_event_listener of the ServiceWorkerRegistraitonData in the
-    // database.
-    navigator.hid.onconnect = () => {}
-    // Wait until resolving getDevices promise to make sure previous
-    // registering event listener request is processed by the HidService.
-    promises.push(navigator.hid.getDevices());
-  }
-  event.waitUntil(Promise.all(promises));
-}
-
 if (navigator.hid) {
-  var curr = new Date();
-  console.log('created on ', curr);
+  // Add connection event listeners.
   navigator.hid.onconnect = (e) => {
-    console.log('event onconnect listner created from ', curr);
-    console.log(e);
+    console.log('hid onconnect: ', e);
   }
   navigator.hid.ondisconnect = (e) => {
-    console.log('event ondisconnect listner created from ', curr);
-    console.log(e);
+    console.log('hid ondisconnect: ', e);
   }
-
-  // self.onactivate = (event) => {
-  //   navigator.hid.ondisconnect = (e) => {
-  //     console.log('event ondisconnect listner created from onactivate');
-  //     console.log(e);
-  //   }
-  //   event.waitUntil(navigator.hid.getDevices());
-  //   console.log('[DEBUG] onactivate event!!!');
-  // }
 
   // Log granted device permissions to the console.
   navigator.hid.getDevices().then(devices => {
@@ -219,50 +196,7 @@ if (navigator.hid) {
       addHidDevice(d);
     }
   });
-
-  // Set up onMessage handler.
-  setUpMessageHandler();
 } else {
   console.log('WebHID not available');
 }
 
-// https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
-// const onUpdate = (tabId, info, tab) => /^https?:/.test(info.url) && findTab([tab]);
-// findTab();
-// chrome.runtime.onConnect.addListener(port => {
-//   if (port.name === 'keepAlive') {
-//     setTimeout(() => port.disconnect(), 250e3);
-//     port.onDisconnect.addListener(() => findTab());
-//   }
-// });
-// async function findTab(tabs) {
-//   if (chrome.runtime.lastError) { /* tab was closed before setTimeout ran */ }
-//   for (const { id: tabId } of tabs || await chrome.tabs.query({ url: '*://*/*' })) {
-//     try {
-//       await chrome.scripting.executeScript({ target: { tabId }, func: connect });
-//       chrome.tabs.onUpdated.removeListener(onUpdate);
-//       return;
-//     } catch (e) { }
-//   }
-//   chrome.tabs.onUpdated.addListener(onUpdate);
-// }
-// function connect() {
-//   chrome.runtime.connect({ name: 'keepAlive' })
-//     .onDisconnect.addListener(connect);
-// }
-
-
-
-// create the offscreen document that will send message every 20
-// seconds which resets the inactivity timer.
-// (async function createOffscreen() {
-//   if (await chrome.offscreen.hasDocument?.()) {
-//     console.log('offscreen document exists!');
-//     return;
-//   }
-//   await chrome.offscreen.createDocument({
-//     url: 'offscreen.html',
-//     reasons: ['BLOBS'],
-//     justification: 'keep service worker alive',
-//   });
-// })();
